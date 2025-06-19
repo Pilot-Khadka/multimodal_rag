@@ -1,7 +1,7 @@
 ## Multimodal RAG
 **Status: Incomplete** – under active development
 
-## Completed
+## Implemented 
 
 - Text integration working
 - Download and clean YouTube captions
@@ -9,13 +9,13 @@
 - Image embedding using CLIP + histogram-based frame selection from videos
 - Multirepresentational chunking
 - CLI app
+- Query decomposition - multi-query, step-back, HyDE
 
 ## Remaining 
-
-- **Image Integration** –  core embeddings are done, needs hooking into pipeline  
-- **Query Decomposition** –  multi-query, step-back, HyDE (probably?)
+- **Image Integration** –  core embeddings are done, needs adding it to interface
+- complete rag interface (add image query), pass rag through the interface to cli
 - **Hierarchical Chunking** –  add tree-like metadata or context windows  
-- **Reranking / Rank Fusion** –  needs evaluation logic and ranker model
-
+- **Reranking / Rank Fusion** – planned-COLBERT,  
+- **Query fusion** - probably?
 
 

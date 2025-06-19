@@ -13,34 +13,20 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 #
 
 
-class Retreiver:
-    @abstractmethod
-    def encode_text(self, texts: List[str]):
-        pass
-
-    @abstractmethod
-    def encode_image(self, images):
-        pass
-
-
 class MultimodalRetriever(BaseRetriever):
-    """Retrieves relevant documents based on text or image queries."""
-
     embedding_model: BaseEmbeddingModel
     vector_store: VectorstoreManager
     config: RetrievalConfig
 
-    def _get_relevant_documents(self, query: str) -> List[Document]:
-        """LangChain-required method."""
+    def get_relevant_documents(self, query: str) -> List[Document]:
         raw_results = self.retrieve_by_text(query)
-        print("raw results:", raw_results)
+        # print("raw results:", raw_results)
         return [
             Document(page_content=item["document"], metadata=item["metadata"])
             for item in raw_results
         ]
 
     def retrieve_by_text(self, query: str) -> List[Dict[str, Any]]:
-        """Retrieve documents similar to text query."""
         query_embedding = self.embedding_model.encode_text([query])
 
         results = self.vector_store.text_collection.query(
@@ -50,10 +36,9 @@ class MultimodalRetriever(BaseRetriever):
         return self._format_results(results)
 
     def retrieve_by_image(self, image) -> List[Dict[str, Any]]:
-        """Retrieve documents similar to image query."""
         query_embedding = self.embedding_model.encode_image([image])
 
-        # Search both text and image collections
+        # search both text and image
         text_results = self.vector_store.text_collection.query(
             query_embeddings=query_embedding.tolist(), n_results=self.config.top_k // 2
         )
@@ -66,7 +51,6 @@ class MultimodalRetriever(BaseRetriever):
         return combined_results
 
     def _format_results(self, results: Dict[str, Any]) -> List[Dict[str, Any]]:
-        """Format retrieval results."""
         formatted = []
         for i, doc_id in enumerate(results["ids"][0]):
             formatted.append(
@@ -86,12 +70,12 @@ class MultimodalRetriever(BaseRetriever):
     def _combine_results(
         self, text_results: Dict, image_results: Dict
     ) -> List[Dict[str, Any]]:
-        """Combine and rank text and image results."""
+        """combines and rank text and image results."""
         combined = []
         combined.extend(self._format_results(text_results))
         combined.extend(self._format_results(image_results))
 
-        # Sort by distance (similarity)
+        # sort by distance
         combined.sort(key=lambda x: x["distance"]
                       if x["distance"] else float("inf"))
 
@@ -121,23 +105,18 @@ class MultimodalRetriever(BaseRetriever):
 
 
 class HierarchicalRetreiver(BaseRetriever):
-    """Retrieves relevant documents based on text or image queries."""
-
     embedding_model: BaseEmbeddingModel
     vector_store: VectorstoreManager
     config: RetrievalConfig
 
-    def _get_relevant_documents(self, query: str) -> List[Document]:
-        """LangChain-required method."""
+    def get_relevant_documents(self, query: str) -> List[Document]:
         raw_results = self.retrieve_by_text(query)
-        print("raw results:", raw_results)
         return [
             Document(page_content=item["document"], metadata=item["metadata"])
             for item in raw_results
         ]
 
     def retrieve_by_text(self, query: str) -> List[Dict[str, Any]]:
-        """Retrieve documents similar to text query."""
         query_embedding = self.embedding_model.encode_text([query])
 
         # only search summaries
@@ -153,7 +132,6 @@ class HierarchicalRetreiver(BaseRetriever):
         return self._format_results(results)
 
     def _format_results(self, results: Dict[str, Any]) -> List[Dict[str, Any]]:
-        """Format retrieval results."""
         formatted = []
         for i, summary_id in enumerate(results["ids"][0]):
             summary_metadata = results["metadatas"][0][i]
@@ -182,7 +160,7 @@ class HierarchicalRetreiver(BaseRetriever):
 
 
 if __name__ == "__main__":
-    query = "what videos was it that Derek talked about the largest rainfall simulator?"
+    query = "what video was it that Derek talked about the largest rainfall simulator?"
     clip = CLIPModel()
     storeconfig = VectorStoreConfig()
     vectorstore = VectorstoreManager(storeconfig)

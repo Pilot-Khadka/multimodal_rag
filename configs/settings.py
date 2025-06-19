@@ -1,5 +1,6 @@
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import List
+from enum import Enum
 import torch
 
 
@@ -29,9 +30,44 @@ class VectorStoreConfig:
     similarity_metric: str = "cosine"
 
 
+class QueryDecompositionType(Enum):
+    MULTI_QUERY = "multi_query"
+    STEP_BACK = "step_back"
+    HYDE = "hyde"
+
+
+@dataclass
+class QueryDecompositionConfig:
+    enable_decomposition: bool = False
+
+    # primary decomposition type -> multiquery
+    decomposition_type: QueryDecompositionType = QueryDecompositionType.MULTI_QUERY
+    max_docs_per_query: int = 10
+    # higher -> more creative
+    llm_temperature: float = 0.3
+
+
+class DecompositionPresets:
+    @staticmethod
+    def conservative() -> QueryDecompositionConfig:
+        return QueryDecompositionConfig(
+            enable_decomposition=True,
+            decomposition_type=QueryDecompositionType.MULTI_QUERY,
+            llm_temperature=0.1,
+        )
+
+    @staticmethod
+    def balanced() -> QueryDecompositionConfig:
+        return QueryDecompositionConfig(
+            enable_decomposition=True,
+            decomposition_type=QueryDecompositionType.MULTI_QUERY,
+            llm_temperature=0.3,
+        )
+
+
 @dataclass
 class FileConfig:
-    channel_name = "1veritasium"
+    channel_name: str = "1veritasium"
     video_status_file: str = f"{channel_name}_videos.csv"
     video_path: str = "data/videos"
     caption_path: str = "data/captions"
@@ -40,7 +76,7 @@ class FileConfig:
 
 @dataclass
 class CsvConfig:
-    channel_name = "1veritasium"
+    channel_name: str = "1veritasium"
     video_status_file: str = f"{channel_name}_videos.csv"
     video: str = "video_downloaded"
     caption: str = "caption_downloaded"

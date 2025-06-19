@@ -62,15 +62,9 @@ class CLIApp:
         elif command == "help":
             self._show_help()
 
-        elif command == "history":
-            self._show_history()
-
         elif command == "clear":
             os.system("clear" if os.name == "posix" else "cls")
             self._print_banner()
-
-        elif command == "config":
-            self._show_config()
 
         else:
             print(f"Unknown command: /{command}")
@@ -84,8 +78,7 @@ class CLIApp:
             return
 
         image = Image.open(image_path)
-        print(f"loaded image: {image_path} (Size: {
-              image.size}, Mode: {image.mode})")
+        print(f"loaded image: {image_path} (Size: {image.size}, Mode: {image.mode})")
         print("query:", query)
         self._preview_image(image_path)
 
@@ -123,7 +116,7 @@ class CLIApp:
                 .lower()
             )
             if confirm != "y":
-                return "ℹ️ Query canceled."
+                return "Query canceled."
 
         try:
             response = self.rag.query(query.strip())
