@@ -3,7 +3,10 @@ import subprocess
 from PIL import Image
 from typing import Optional
 from dataclasses import dataclass
-from rag import RAGApp
+from rag_interface import RAGInterface
+from utils.helper import render_gradient_text
+
+from rich.console import Console
 
 
 @dataclass
@@ -18,13 +21,19 @@ class CLIApp:
         self.config = config
         self.rag = None
 
+        with open("images/ascii.ans", "r") as f:
+            self.ansi_art = f.read()
+
     def _init_rag(self):
         if self.rag is None:
-            self.rag = RAGApp()
+            self.rag = RAGInterface()
 
     def _print_banner(self):
+        console = Console()
+        banner = render_gradient_text(self.ansi_art, "#FF9A9E", "#FECFEF")
+        console.print(banner)
+
         print("╭─────────────────────────────────────────╮")
-        print("│         🔍 RAG CLI Application          │")
         print("│    Multimodal Retrieval & Generation    │")
         print("╰─────────────────────────────────────────╯")
         print()
@@ -52,6 +61,7 @@ class CLIApp:
             image_path = parts[1]
             # image_path = os.path.join(os.getcwd(), image_path)
             image_query = parts[2] if len(parts) > 2 else "Describe this image"
+            print("image query:", image_query)
             self._handle_image(image_path, image_query)
             return False, True
 
@@ -81,6 +91,8 @@ class CLIApp:
         print(f"loaded image: {image_path} (Size: {image.size}, Mode: {image.mode})")
         print("query:", query)
         self._preview_image(image_path)
+        response = self.rag.ask_with_image(image)
+        return response
 
     def _preview_image(self, image_path):
         if os.name == "posix":  # macos/ linux
@@ -119,8 +131,9 @@ class CLIApp:
                 return "Query canceled."
 
         try:
-            response = self.rag.query(query.strip())
+            response = self.rag.ask(query.strip())
             return response
+
         except KeyboardInterrupt:
             return "❌ Query interrupted by user"
         except Exception as e:

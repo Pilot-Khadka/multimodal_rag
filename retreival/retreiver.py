@@ -1,12 +1,11 @@
-#
 from models.embeddings import BaseEmbeddingModel, CLIPModel
 from configs.settings import RetrievalConfig, VectorStoreConfig
 from vectorstore.manager import VectorstoreManager
 import os
 import sys
-from abc import ABC, abstractmethod
 from typing import List, Dict, Any
 from langchain.schema import Document, BaseRetriever
+import numpy as np
 
 #
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -76,8 +75,7 @@ class MultimodalRetriever(BaseRetriever):
         combined.extend(self._format_results(image_results))
 
         # sort by distance
-        combined.sort(key=lambda x: x["distance"]
-                      if x["distance"] else float("inf"))
+        combined.sort(key=lambda x: x["distance"] if x["distance"] else float("inf"))
 
         return combined[: self.config.top_k]
 
@@ -130,6 +128,10 @@ class HierarchicalRetreiver(BaseRetriever):
             return []
 
         return self._format_results(results)
+
+    def retreive_by_image(self, image: np.ndarray) -> List[Dict[str, Any]]:
+        raise NotImplementedError()
+        pass
 
     def _format_results(self, results: Dict[str, Any]) -> List[Dict[str, Any]]:
         formatted = []

@@ -26,8 +26,7 @@ class RAGApp:
         )
         self.embedding_model = CLIPModel()
         self.vector_store_config = VectorStoreConfig()
-        self.vector_store_manager = VectorstoreManager(
-            self.vector_store_config)
+        self.vector_store_manager = VectorstoreManager(self.vector_store_config)
         self.retrieval_config = RetrievalConfig()
         self.retriever = HierarchicalRetreiver(
             embedding_model=self.embedding_model,
@@ -47,7 +46,7 @@ class RAGApp:
     def query(
         self,
         question: str,
-        use_decomposition: False,
+        use_decomposition: bool = False,
         decomposition_type: Optional[QueryDecompositionType] = None,
     ) -> dict:
         if not use_decomposition:

@@ -4,6 +4,31 @@ import pandas as pd
 from datetime import datetime
 from typing import Optional, List, Tuple, Dict
 
+from rich.text import Text
+from rich.color import Color
+
+
+def render_gradient_text(text_str, start_hex, end_hex):
+    start_color = Color.parse(start_hex).triplet
+    end_color = Color.parse(end_hex).triplet
+    total_chars = len(text_str)
+
+    gradient_text = Text()
+    for i, char in enumerate(text_str):
+        r = int(
+            start_color[0] + (end_color[0] - start_color[0]) * i / (total_chars - 1)
+        )
+        g = int(
+            start_color[1] + (end_color[1] - start_color[1]) * i / (total_chars - 1)
+        )
+        b = int(
+            start_color[2] + (end_color[2] - start_color[2]) * i / (total_chars - 1)
+        )
+        hex_color = f"#{r:02X}{g:02X}{b:02X}"
+        gradient_text.append(char, style=f"bold {hex_color}")
+
+    return gradient_text
+
 
 def print_frame_progress(current, total, bar_length=40):
     progress = int(bar_length * current / total)
@@ -60,8 +85,7 @@ def get_all_files(file_type: str = "video") -> Optional[Tuple[List[str], List[st
     matched_files = [f for f in all_files if f.endswith(file_ext)]
 
     if not matched_files:
-        print(f"No {file_type} files with extension '{
-              file_ext}' found in {base_path}")
+        print(f"No {file_type} files with extension '{file_ext}' found in {base_path}")
         return None
 
     matched_files.sort()
@@ -91,8 +115,7 @@ def check_for_video_and_caption() -> Dict[str, Tuple[str, str]]:
     matched_files = {}
     for video_id in video_map:
         if video_id in caption_map:
-            matched_files[video_id] = (
-                video_map[video_id], caption_map[video_id])
+            matched_files[video_id] = (video_map[video_id], caption_map[video_id])
         else:
             print(f"Warning: No caption file found for video ID: {video_id}")
 

@@ -41,12 +41,15 @@ class RAGInterface:
             decomposition_type=decomposition_type,
         )
 
-    def ask_with_image(
-        self,
-        image,
-    ) -> Dict[str, Any]:
-        # TODO
-        pass
+    def ask_with_image(self, image, **kwargs) -> Dict[str, Any]:
+        use_decomposition = kwargs.get(
+            "use_decomposition", self.config.enable_decomposition
+        )
+        decomposition_type = kwargs.get(
+            "decomposition_type", self.config.decomposition_type
+        )
+
+        return self.rag_app.query_by_image(image)
 
     def set_preset(self, preset_name: str):
         preset_map = {
@@ -55,8 +58,7 @@ class RAGInterface:
         }
         if preset_name not in preset_map:
             raise ValueError(
-                f"Unknown preset: {preset_name}. Available: {
-                    list(preset_map.keys())}"
+                f"Unknown preset: {preset_name}. Available: {list(preset_map.keys())}"
             )
 
         self.config = preset_map[preset_name]()

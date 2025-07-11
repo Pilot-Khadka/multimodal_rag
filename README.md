@@ -1,4 +1,9 @@
-## Multimodal RAG
+<div align="center">
+<img src="images/title.png">
+</div>
+
+## About the project
+
 **Status: Incomplete** – under active development
 
 ## Implemented 
@@ -18,4 +23,9 @@
 - **Reranking / Rank Fusion** – planned-COLBERT,  
 - **Query fusion** - probably?
 
+## Usage
 
+Run main.py
+```
+python main.py
+```
