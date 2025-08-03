@@ -2,22 +2,22 @@ import os
 from rag import RAGApp
 from typing import Dict, Any
 from langchain_google_genai import ChatGoogleGenerativeAI
-
-from configs.settings import QueryDecompositionConfig, DecompositionPresets
+from utils.general import get_config
 
 api_key = os.environ.get("GEMINI_API")
 
 
 class RAGInterface:
-    def __init__(self):
+    def __init__(self, config_path="configs/config.yaml"):
+        self.config = get_config(config_path)
         self.rag_app = RAGApp()
-        self.config = QueryDecompositionConfig()
+        self.config = self.config["query_decomposition"]
 
         # update temperature if specified
-        if self.config.enable_decomposition:
+        if self.config["enable_decomposition"]:
             self.rag_app.query_decomposer.llm = ChatGoogleGenerativeAI(
                 model="gemini-2.0-flash",
-                temperature=self.config.llm_temperature,
+                temperature=self.config["llm_temperature"],
                 max_tokens=None,
                 timeout=None,
                 max_retries=2,
@@ -26,10 +26,10 @@ class RAGInterface:
 
     def ask(self, question: str, **kwargs) -> Dict[str, Any]:
         use_decomposition = kwargs.get(
-            "use_decomposition", self.config.enable_decomposition
+            "use_decomposition", self.config["enable_decomposition"]
         )
         decomposition_type = kwargs.get(
-            "decomposition_type", self.config.decomposition_type
+            "decomposition_type", self.config["decomposition_type"]
         )
 
         if not use_decomposition:
@@ -42,23 +42,14 @@ class RAGInterface:
         )
 
     def ask_with_image(self, image, **kwargs) -> Dict[str, Any]:
-        use_decomposition = kwargs.get(
-            "use_decomposition", self.config.enable_decomposition
-        )
-        decomposition_type = kwargs.get(
-            "decomposition_type", self.config.decomposition_type
-        )
-
         return self.rag_app.query_by_image(image)
 
     def set_preset(self, preset_name: str):
-        preset_map = {
-            "conservative": DecompositionPresets.conservative,
-            "balanced": DecompositionPresets.balanced,
-        }
+        preset_map = {"conservative", "balanced"}
         if preset_name not in preset_map:
             raise ValueError(
-                f"Unknown preset: {preset_name}. Available: {list(preset_map.keys())}"
+                f"Unknown preset: {preset_name}. Available: {
+                    list(preset_map.keys())}"
             )
 
         self.config = preset_map[preset_name]()
@@ -72,7 +63,7 @@ class RAGInterface:
                 google_api_key=api_key,
             )
 
-    def get_current_config(self) -> QueryDecompositionConfig:
+    def get_current_config(self):
         return self.config
 
 

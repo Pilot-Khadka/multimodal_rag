@@ -1,11 +1,8 @@
 import os
-import sys
 from typing import List
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.prompts import PromptTemplate
-from configs.settings import QueryDecompositionType
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 api_key = os.environ.get("GEMINI_API")
 
@@ -63,14 +60,12 @@ class QueryDecomposer:
             Passage:""",
         )
 
-    def decompose_query(
-        self, question: str, decomposition_type: QueryDecompositionType
-    ) -> List[str]:
-        if decomposition_type == QueryDecompositionType.MULTI_QUERY:
+    def decompose_query(self, question: str, decomposition_type) -> List[str]:
+        if decomposition_type == "multi_query":
             return self._multi_query_decomposition(question)
-        elif decomposition_type == QueryDecompositionType.STEP_BACK:
+        elif decomposition_type == "step_back":
             return self._step_back_decomposition(question)
-        elif decomposition_type == QueryDecompositionType.HYDE:
+        elif decomposition_type == "hyde":
             return self._hyde_decomposition(question)
         else:
             raise ValueError(f"unknown type : {decomposition_type}")
@@ -91,9 +86,7 @@ class QueryDecomposer:
         hypothetical_doc = response.content.strip()
         return [question, hypothetical_doc]
 
-    def decompose_multiple_types(
-        self, question: str, decomposition_types: List[QueryDecompositionType]
-    ) -> List[str]:
+    def decompose_multiple_types(self, question: str, decomposition_types) -> List[str]:
         all_queries = set()
 
         for decomposition_type in decomposition_types:

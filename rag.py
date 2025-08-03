@@ -4,12 +4,12 @@ from langchain.chains import RetrievalQA
 from langchain.schema import Document
 from langchain_google_genai import ChatGoogleGenerativeAI
 
-from retreival.retreiver import HierarchicalRetreiver
 from prompts.prompts import VIDEO_RAG_PROMPT
 from vectorstore.manager import VectorstoreManager
-from configs.settings import RetrievalConfig, VectorStoreConfig
+from utils.general import get_config
 from models.embeddings import CLIPModel
-from query_decomposition.query import QueryDecomposer, QueryDecompositionType
+from query_decomposition.query import QueryDecomposer
+from retreival.hierarchical_retreiver import HierarchicalRetreiver
 
 api_key = os.environ.get("GEMINI_API")
 
@@ -24,10 +24,13 @@ class RAGApp:
             max_retries=2,
             google_api_key=api_key,
         )
+        self.cfg = get_config()
+        self.vector_store_config = self.cfg["vectorstore"]
+        self.retrieval_config = self.cfg["retrieval"]
+
         self.embedding_model = CLIPModel()
-        self.vector_store_config = VectorStoreConfig()
-        self.vector_store_manager = VectorstoreManager(self.vector_store_config)
-        self.retrieval_config = RetrievalConfig()
+        self.vector_store_manager = VectorstoreManager(
+            self.vector_store_config)
         self.retriever = HierarchicalRetreiver(
             embedding_model=self.embedding_model,
             vector_store=self.vector_store_manager,
@@ -47,13 +50,13 @@ class RAGApp:
         self,
         question: str,
         use_decomposition: bool = False,
-        decomposition_type: Optional[QueryDecompositionType] = None,
+        decomposition_type=None,
     ) -> dict:
         if not use_decomposition:
             return self._single_query(question)
 
         if decomposition_type is None:
-            decomposition_type = QueryDecompositionType.MULTI_QUERY
+            decomposition_type = "MULTI_QUERY"
 
         return self._decompose_query(question, decomposition_type)
 
@@ -62,11 +65,7 @@ class RAGApp:
         sources = self._format_sources(result.get("source_documents", []))
         return {"answer": result["result"], "sources": sources, "success": True}
 
-    def _decompose_query(
-        self,
-        question: str,
-        decomposition_type: QueryDecompositionType,
-    ) -> dict:
+    def _decompose_query(self, question: str, decomposition_type) -> dict:
         all_queries = self.query_decomposer.decompose_query(
             question, decomposition_type
         )

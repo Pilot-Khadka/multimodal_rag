@@ -3,9 +3,9 @@ import subprocess
 from PIL import Image
 from typing import Optional
 from dataclasses import dataclass
+
 from rag_interface import RAGInterface
 from utils.helper import render_gradient_text
-
 from rich.console import Console
 
 

@@ -1,0 +1,48 @@
+chunking:
+  chunk_overlap: 20
+  chunk_size: 300
+  separators:
+  - '
+
+
+    '
+  - '
+
+    '
+  - ' '
+
+csv_config:
+  caption: caption_downloaded
+  captions: captions_cleaned
+  channel_name: 1veritasium
+  text_embed: text_embedding
+  video: video_downloaded
+  video_embed: video_embedding
+  video_status_file: 1veritasium_videos.csv
+
+embedding:
+  device: cuda
+  model_name: ViT-B/32
+
+file_config:
+  caption_path: data/captions
+  channel_name: 1veritasium
+  cleaned_caption_path: data/cleaned_captions
+  video_path: data/videos
+  video_status_file: 1veritasium_videos.csv
+
+query_decomposition:
+  decomposition_type: multi_query
+  enable_decomposition: true 
+  llm_temperature: 0.3
+  max_docs_per_query: 10
+
+retrieval:
+  top_k: 2
+
+vectorstore:
+  hash_collection_name: content_hashes
+  image_collection_name: image_collection
+  persist_path: ./vectorstore/chroma_store
+  similarity_metric: cosine
+  text_collection_name: text_embeddings

@@ -1,25 +1,24 @@
 import hashlib
 import chromadb
-from configs.settings import VectorStoreConfig
 from utils.helper import get_id_based_on_column, check_for_video_and_caption
 
 
 class VectorstoreManager:
-    def __init__(self, config: VectorStoreConfig):
+    def __init__(self, config):
         self.config = config
         self.chroma_client = chromadb.PersistentClient(
-            path=config.persist_path)
+            path=config["persist_path"])
 
         self.text_collection = self.chroma_client.get_or_create_collection(
-            name=config.text_collection_name,
-            metadata={"hnsw:space": config.similarity_metric},
+            name=config["text_collection_name"],
+            metadata={"hnsw:space": config["similarity_metric"]},
         )
         self.image_collection = self.chroma_client.get_or_create_collection(
-            name=config.image_collection_name,
-            metadata={"hnsw:space": config.similarity_metric},
+            name=config["image_collection_name"],
+            metadata={"hnsw:space": config["similarity_metric"]},
         )
         self.content_hash_collection = self.chroma_client.get_or_create_collection(
-            name=config.hash_collection_name
+            name=config["hash_collection_name"]
         )
 
     def generate_content_hash(self, content) -> str:

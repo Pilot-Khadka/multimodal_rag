@@ -1,7 +1,7 @@
 [project]
 name = "multimodal-rag"
 version = "0.1.0"
-description = "Add your description here"
+description = ""
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
@@ -14,4 +14,9 @@ dependencies = [
     "pillow>=11.3.0",
     "torch>=2.7.1",
     "torchvision>=0.22.1",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.12.7",
 ]
