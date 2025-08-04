@@ -6,11 +6,12 @@ from typing import List, Dict
 from googleapiclient.discovery import build
 
 from utils.helper import set_file_status, get_file_path
-from configs.settings import CsvConfig, FileConfig
+from utils.general import get_config
 
 api_key = os.environ.get("YOUTUBE_API")
-csv_config = CsvConfig()
-file_config = FileConfig()
+cfg = get_config()
+csv_config = cfg["csv_config"]
+file_config = cfg["file_config"]
 
 parser = argparse.ArgumentParser(description="Download youtube videos")
 parser.add_argument(
@@ -110,10 +111,9 @@ def download_single_caption(video_id: str, video_url: str) -> bool:
         print(f"Caption already exists for {video_id}: {existing_caption}")
         return True
 
-    path = os.getcwd()
-    video_path = os.path.join(path, file_config.video_path)
-    caption_path = os.path.join(path, file_config.caption_path)
-    csv_path = os.path.join(path, file_config.video_status_file)
+    video_path = file_config["video_path"]
+    caption_path = file_config["caption_path"]
+    csv_path = os.path.join(file_config["data_path"], f"{channel_name}_videos.csv")
     os.makedirs(caption_path, exist_ok=True)
 
     print(f"Downloading caption for video ID: {video_id}")
@@ -149,7 +149,9 @@ def download_single_caption(video_id: str, video_url: str) -> bool:
             print(f"Caption file not found after download for {video_id}")
             return False
 
-        set_file_status(csv_path=csv_path, video_id=video_id, column=csv_config.caption)
+        set_file_status(
+            csv_path=csv_path, video_id=video_id, column=csv_config["caption"]
+        )
         return True
 
     except subprocess.CalledProcessError as e:
@@ -161,15 +163,23 @@ def download_single_caption(video_id: str, video_url: str) -> bool:
 
 
 def download_videos(df: pd.DataFrame, caption_only=False, max_new_downloads=10):
-    path = os.getcwd()
-    video_path = os.path.join(path, file_config.video_path)
-    caption_path = os.path.join(path, file_config.caption_path)
-    csv_path = os.path.join(path, file_config.video_status_file)
+    channel_config = get_config(path="configs/channel_config.yaml")
+    channel_name = channel_config["channel_name"]
+
+    video_path = file_config["video_path"]
+    caption_path = file_config["caption_path"]
+    video_status_file_path = os.path.join(
+        file_config["data_path"], f"{channel_name}_videos.csv"
+    )
 
     os.makedirs(video_path, exist_ok=True)
     os.makedirs(caption_path, exist_ok=True)
 
-    df = df[~df[csv_config.video]]
+    if csv_config["video"] not in df.columns:
+        df[csv_config["video"]] = False
+        df.to_csv(video_status_file_path, index=False)
+
+    df = df[~df[csv_config["video"]]]
     downloaded_count = 0
     for idx, row in df.iterrows():
         if downloaded_count >= max_new_downloads:
@@ -222,7 +232,9 @@ def download_videos(df: pd.DataFrame, caption_only=False, max_new_downloads=10):
                     check=True,
                 )
                 set_file_status(
-                    csv_path=csv_path, video_id=video_id, column=csv_config.video
+                    csv_path=video_status_file_path,
+                    video_id=video_id,
+                    column=csv_config["video"],
                 )
 
             srt_file = f"{video_id}.en.srt"
@@ -231,7 +243,9 @@ def download_videos(df: pd.DataFrame, caption_only=False, max_new_downloads=10):
                 os.rename(srt_path, os.path.join(caption_path, f"{video_id}.srt"))
 
             set_file_status(
-                csv_path=csv_path, video_id=video_id, column=csv_config.caption
+                csv_path=video_status_file_path,
+                video_id=video_id,
+                column=csv_config["caption"],
             )
             downloaded_count += 1
 
@@ -240,10 +254,12 @@ def download_videos(df: pd.DataFrame, caption_only=False, max_new_downloads=10):
 
 
 def download_single_video(df, video_id, caption_only=False):
-    path = os.getcwd()
-    video_path = os.path.join(path, file_config.video_path)
-    caption_path = os.path.join(path, file_config.caption_path)
-    csv_path = os.path.join(path, file_config.video_status_file)
+    channel_config = get_config(path="configs/channel_config.yaml")
+    channel_name = channel_config["channel_name"]
+
+    video_path = file_config["video_path"]
+    caption_path = file_config["caption_path"]
+    csv_path = os.path.join(file_config["data_path"], f"{channel_name}_videos.csv")
 
     os.makedirs(video_path, exist_ok=True)
     os.makedirs(caption_path, exist_ok=True)
@@ -287,20 +303,34 @@ def download_single_video(df, video_id, caption_only=False):
             ],
             check=True,
         )
-        set_file_status(csv_path=csv_path, video_id=video_id, column=csv_config.video)
+        set_file_status(
+            csv_path=csv_path, video_id=video_id, column=csv_config["video"]
+        )
 
     srt_file = f"{video_id}.en.srt"
     srt_path = os.path.join(video_path, srt_file)
     if os.path.exists(srt_path):
         os.rename(srt_path, os.path.join(caption_path, f"{video_id}.srt"))
 
-    set_file_status(csv_path=csv_path, video_id=video_id, column=csv_config.caption)
+    set_file_status(csv_path=csv_path, video_id=video_id, column=csv_config["caption"])
 
 
 if __name__ == "__main__":
-    channel_name = "1veritasium"
-    if not os.path.exists(f"{channel_name}_videos.csv"):
-        videos = get_all_videos(api_key, channel_name=channel_name)
+    channel_config = get_config(path="configs/channel_config.yaml")
+    cfg = get_config(path="configs/config.yaml")
+
+    data_path = cfg["file_config"]["data_path"]
+    video_status_file_path = os.path.join(
+        os.getcwd(), cfg["file_config"]["video_status_file"]
+    )
+    channel_name = channel_config["channel_name"]
+    channel_id = channel_config.get("channel_id", None)
+    csv_path = os.path.join(file_config["data_path"], f"{channel_name}_videos.csv")
+    print("csv path:", csv_path)
+    if not os.path.exists(csv_path):
+        videos = get_all_videos(
+            api_key, channel_name=channel_name, channel_id=channel_id
+        )
         print(f"Total videos found: {len(videos)}")
 
         for i, video in enumerate(videos[:5]):
@@ -311,13 +341,15 @@ if __name__ == "__main__":
             print("-" * 50)
 
         df = pd.DataFrame(videos)
-        df.to_csv(f"{channel_name}_videos.csv", index=False, encoding="utf-8")
+        os.makedirs(data_path, exist_ok=True)
+        final_csv_path = os.path.join(data_path, f"{channel_name}_videos.csv")
+        df.to_csv(final_csv_path, index=False, encoding="utf-8")
 
         df_id = pd.DataFrame(
             [video["video_id"] for video in videos], columns=["video_id"]
         )
-        df_id.to_csv("video_status.csv", index=False, encoding="utf-8")
+        df_id.to_csv(video_status_file_path, index=False, encoding="utf-8")
         print(df.head())
     else:
-        df = pd.read_csv(f"{channel_name}_videos.csv")
+        df = pd.read_csv(csv_path)
         download_videos(df, caption_only=False, max_new_downloads=args.num)

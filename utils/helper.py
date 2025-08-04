@@ -6,6 +6,7 @@ from typing import Optional, List, Tuple, Dict
 
 from rich.text import Text
 from rich.color import Color
+from utils.general import get_config
 
 
 def render_gradient_text(text_str, start_hex, end_hex):
@@ -149,8 +150,7 @@ def set_file_status(video_id, column, csv_path):
     df.to_csv(csv_path, index=False)
 
 
-def get_filtered_ids(csv_filename):
-    csv_path = os.path.join(os.getcwd(), csv_filename)
+def get_filtered_ids(csv_path):
     if not os.path.exists(csv_path):
         print("No csv file exists")
         return []
@@ -166,8 +166,8 @@ def get_filtered_ids(csv_filename):
 
     for col in required_columns + ["video_id"]:
         if col not in df.columns:
+            df[col] = False
             print(f"Missing required column: {col}")
-            return []
 
     filtered_df = df[
         (df["video_downloaded"] == True)
@@ -181,9 +181,8 @@ def get_filtered_ids(csv_filename):
     return filtered_df["video_id"].tolist()
 
 
-def get_id_based_on_column(column_name, csv_filename, file_present=False):
-    print("column name:", column_name)
-    csv_path = os.path.join(os.getcwd(), csv_filename)
+def get_id_based_on_column(column_name, csv_path, file_present=False):
+    print("csv path from get id based on columns:", csv_path)
     if not os.path.exists(csv_path):
         print("No csv file exists")
         return

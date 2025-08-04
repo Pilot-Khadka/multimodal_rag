@@ -6,8 +6,7 @@ from utils.helper import get_id_based_on_column, check_for_video_and_caption
 class VectorstoreManager:
     def __init__(self, config):
         self.config = config
-        self.chroma_client = chromadb.PersistentClient(
-            path=config["persist_path"])
+        self.chroma_client = chromadb.PersistentClient(path=config["persist_path"])
 
         self.text_collection = self.chroma_client.get_or_create_collection(
             name=config["text_collection_name"],

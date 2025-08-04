@@ -13,11 +13,10 @@ usage:
 
 import os
 import re
-import pandas as pd
 from typing import Dict, Tuple, List, Optional
 
 from utils.helper import set_file_status, get_id_based_on_column
-from configs.settings import FileConfig
+from utils.general import get_config
 
 
 class FrameRange:
@@ -133,16 +132,16 @@ def clean_file(input_path: str, output_dir: str = None) -> None:
 
 
 def main():
-    config = FileConfig()
-    caption_dir = config.caption_path
-    output_dir = config.cleaned_caption_path
+    config = get_config()
+    caption_dir = config["caption_path"]
+    output_dir = config["cleaned_caption_path"]
     os.makedirs(output_dir, exist_ok=True)
 
     current_path = os.getcwd()
     caption_path = os.path.join(current_path, caption_dir)
     output_path = os.path.join(current_path, output_dir)
 
-    csv_path = os.path.join(current_path, config.video_status_file)
+    csv_path = os.path.join(current_path, config["video_status_file"])
 
     filtered_files = get_id_based_on_column(column_name="captions_cleaned")
     all_captions = [f for f in os.listdir(caption_path) if f.endswith(".srt")]

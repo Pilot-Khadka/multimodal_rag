@@ -15,13 +15,13 @@
 - Multirepresentational chunking
 - CLI app
 - Query decomposition - multi-query, step-back, HyDE
+- Added image integration, can query using images
 
 ## Remaining 
-- **Image Integration** –  core embeddings are done, needs adding it to interface
-- complete rag interface (add image query), pass rag through the interface to cli
 - **Hierarchical Chunking** –  add tree-like metadata or context windows  
 - **Reranking / Rank Fusion** – planned-COLBERT,  
 - **Query fusion** - probably?
+- Add support for downloading from/storing/quering multiple channels
 
 ## Usage
 

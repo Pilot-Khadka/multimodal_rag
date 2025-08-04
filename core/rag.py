@@ -1,15 +1,15 @@
 import os
-from typing import List, Optional
+from typing import List
 from langchain.chains import RetrievalQA
 from langchain.schema import Document
 from langchain_google_genai import ChatGoogleGenerativeAI
 
 from prompts.prompts import VIDEO_RAG_PROMPT
-from vectorstore.manager import VectorstoreManager
 from utils.general import get_config
-from models.embeddings import CLIPModel
-from query_decomposition.query import QueryDecomposer
-from retreival.hierarchical_retreiver import HierarchicalRetreiver
+from core.vectorstore_manager import VectorstoreManager
+from core.models.embeddings import CLIPModel
+from core.query_decomposition.query import QueryDecomposer
+from core.retreivers.hierarchical_retreiver import HierarchicalRetreiver
 
 api_key = os.environ.get("GEMINI_API")
 

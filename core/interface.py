@@ -1,7 +1,8 @@
 import os
-from rag import RAGApp
 from typing import Dict, Any
 from langchain_google_genai import ChatGoogleGenerativeAI
+
+from core.rag import RAGApp
 from utils.general import get_config
 
 api_key = os.environ.get("GEMINI_API")

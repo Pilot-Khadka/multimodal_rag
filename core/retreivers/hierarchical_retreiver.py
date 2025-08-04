@@ -1,8 +1,8 @@
 import numpy as np
 from typing import List, Dict, Any
 from langchain.schema import Document, BaseRetriever
-from vectorstore.manager import VectorstoreManager
-from models.embeddings import BaseEmbeddingModel
+from core.vectorstore_manager import VectorstoreManager
+from core.models.embeddings import BaseEmbeddingModel
 
 
 class HierarchicalRetreiver(BaseRetriever):

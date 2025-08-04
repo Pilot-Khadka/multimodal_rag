@@ -1,12 +1,15 @@
 import os
+
+
+from .base_splitter import BaseTextProcessor
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.schema import HumanMessage
-from utils.process_captions import clean_file
+
 
 api_key = os.environ.get("GEMINI_API")
 
 
-class HierarchicalTextProcessor:
+class HierarchicalTextProcessor(BaseTextProcessor):
     def __init__(self, summary_max_tokens=70, full_chunk_max_tokens=1024):
         self.llm = ChatGoogleGenerativeAI(
             model="gemini-2.0-flash",
@@ -19,7 +22,7 @@ class HierarchicalTextProcessor:
         self.summary_max_tokens = summary_max_tokens
         self.full_chunk_max_tokens = full_chunk_max_tokens
 
-    def create_hierarchical_chunks(self, text):
+    def split_text(self, text):
         full_chunks = self._split_into_full_chunks(text)
         summaries = []
         chunk_mappings = []
@@ -92,12 +95,3 @@ class HierarchicalTextProcessor:
             summary = " ".join(summary_words[: self.summary_max_tokens])
 
         return summary
-
-
-if __name__ == "__main__":
-    h = HierarchicalTextProcessor()
-    path = "/home/pilot/multimodal_rag/data/captions/20vUNgRdB4o.srt"
-
-    text = clean_file(path)
-    # print("text", text)
-    h.create_hierarchical_chunks(text)

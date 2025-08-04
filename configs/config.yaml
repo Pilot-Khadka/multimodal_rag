@@ -25,11 +25,11 @@ embedding:
   model_name: ViT-B/32
 
 file_config:
+  data_path: data/
   caption_path: data/captions
-  channel_name: 1veritasium
   cleaned_caption_path: data/cleaned_captions
   video_path: data/videos
-  video_status_file: 1veritasium_videos.csv
+  video_status_file: data/video_status.csv
 
 query_decomposition:
   decomposition_type: multi_query
